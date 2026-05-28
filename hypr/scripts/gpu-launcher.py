@@ -144,6 +144,15 @@ def main():
     cmd_clean = clean_exec(app_info["exec"])
     cmd_args = shlex.split(cmd_clean)
     
+    # Force OpenGL (disable Vulkan) for Chromium/Electron apps on AMD iGPU.
+    # Vulkan ignores standard DRI_PRIME offloading variables, forcing them to NVIDIA by default.
+    if "AMD" in selected_gpu:
+        app_lower = selected_app_name.lower()
+        exec_lower = cmd_args[0].lower() if cmd_args else ""
+        chromium_names = ["chrome", "brave", "chromium", "electron", "code", "discord", "slack", "spotify", "teams", "vivaldi", "opera"]
+        if any(c in app_lower or c in exec_lower for c in chromium_names):
+            cmd_args.append("--disable-features=Vulkan")
+    
     # 6. Check if app requires running in terminal
     if app_info["terminal"]:
         cmd_args = ["kitty", "-e"] + cmd_args
