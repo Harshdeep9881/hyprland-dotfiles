@@ -1,0 +1,34 @@
+/* =============================================================================
+   Rofi Global Configuration
+   ============================================================================= */
+
+configuration {
+    /* ── Modes ───────────────────────────────────────────────────────────── */
+    modi:               "drun,run,window,filebrowser";
+
+    /* ── Display ─────────────────────────────────────────────────────────── */
+    font:               "JetBrainsMono Nerd Font 12";
+    show-icons:         true;
+    icon-theme:         "Papirus-Dark";
+    display-drun:       " Apps";
+    display-run:        " Run";
+    display-window:     " Windows";
+    display-filebrowser:" Files";
+
+    /* ── drun settings ───────────────────────────────────────────────────── */
+    drun-display-format:        "{name}";
+    drun-match-fields:          "name,generic,exec,categories,keywords";
+    drun-show-actions:          false;
+
+    /* ── Window settings ─────────────────────────────────────────────────── */
+    window-format:      "{w} · {c} · {t}";
+    window-match-fields: "title,class,role,name,desktop";
+
+    /* ── Behaviour ───────────────────────────────────────────────────────── */
+    click-to-exit:      true;
+    steal-focus:        false;
+    terminal:           "kitty";
+}
+
+/* ── Theme ───────────────────────────────────────────────────────────── */
+@theme "catppuccin-mocha"
