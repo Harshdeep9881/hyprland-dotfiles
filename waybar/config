@@ -33,7 +33,7 @@
         "on-click": "activate",
         "format": "{icon}",
         "format-icons": {
-            "default": "",
+            "default": "",
             "1": "1",
             "2": "2",
             "3": "3",
@@ -64,22 +64,28 @@
     },
     "clock": {
         "tooltip-format": "{calendar}",
-        "format-alt": "  {:%a, %d %b %Y}",
-        "format": "  {:%I:%M %p}"
+        "format-alt": "  {:%a, %d %b %Y}",
+        "format": "  {:%I:%M %p}"
     },
     "network": {
-        "format-wifi" : "{icon}",
-        "format-icons": ["󰤯","󰤟","󰤢","󰤥","󰤨"],
+        "format-wifi": "{icon}",
+        "format-icons": [
+            "󰤯",
+            "󰤟",
+            "󰤢",
+            "󰤥",
+            "󰤨"
+        ],
         "format-ethernet": "󰀂",
-	"format-alt" : "󱛇",
-        "format-disconnected" : "󰖪",
-	"tooltip-format-wifi": "{icon} {essid}\n⇣{bandwidthDownBytes}  ⇡{bandwidthUpBytes}",
+        "format-alt": "󱛇",
+        "format-disconnected": "󰖪",
+        "tooltip-format-wifi": "{icon} {essid}\n⇣{bandwidthDownBytes}  ⇡{bandwidthUpBytes}",
         "tooltip-format-ethernet": "󰀂  {ifname}\n⇣{bandwidthDownBytes}  ⇡{bandwidthUpBytes}",
-	"tooltip-format-disconnected": "Disconnected",
-	"on-click": "/home/harsh/.config/rofi/wifi/wifi.sh &",
+        "tooltip-format-disconnected": "Disconnected",
+        "on-click": "/home/harsh/.config/rofi/wifi/wifi.sh &",
         "on-click-right": "/home/harsh/.config/rofi/wifi/wifinew.sh &",
-	"interval": 5,
-	"nospacing": 1,
+        "interval": 5,
+        "nospacing": 1
     },
     "wireplumber": {
         "format": "{icon}",
@@ -88,14 +94,18 @@
         "tooltip-format": "Volume : {volume}%",
         "format-muted": "󰝟",
         "format-icons": {
-            "headphone": "",
-            "default": ["󰖀","󰕾",""]
+            "headphone": "",
+            "default": [
+                "󰖀",
+                "󰕾",
+                ""
+            ]
         },
         "on-click": "pamixer -t",
         "scroll-step": 1
     },
     "custom/logo": {
-        "format": "  ",
+        "format": "  ",
         "tooltip": false,
         "on-click": "/home/harsh/.config/rofi/launchers/misc/launcher.sh &"
     },
@@ -127,7 +137,7 @@
                 "󰁹"
             ]
         },
-        "format-full": "Charged ",
+        "format-full": "Charged ",
         "interval": 5,
         "states": {
             "warning": 20,
