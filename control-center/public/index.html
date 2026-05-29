@@ -1,0 +1,1232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>System Settings — HyprControl</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<style>
+:root{--crust:#11111b;--mantle:#181825;--base:#1e1e2e;--s0:#313244;--s1:#45475a;--s2:#585b70;--text:#cdd6f4;--sub0:#a6adc8;--sub1:#bac2de;--blue:#89b4fa;--lav:#b4befe;--mauve:#cba6f7;--red:#f38ba8;--peach:#fab387;--green:#a6e3a1;--yellow:#f9e2af;--teal:#94e2d5;--sapph:#74c7ec;--glass:rgba(30,30,46,.5);--border:rgba(255,255,255,.06);--r:14px;--r-sm:8px;--r-lg:20px}
+*{margin:0;padding:0;box-sizing:border-box;scrollbar-width:thin;scrollbar-color:var(--s1) transparent}
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-thumb{background:var(--s1);border-radius:9px}
+body{font-family:'Inter',sans-serif;background:var(--crust);color:var(--text);min-height:100vh;overflow:hidden;background-image:radial-gradient(ellipse at 10% 10%,rgba(137,180,250,.07) 0,transparent 45%),radial-gradient(ellipse at 90% 90%,rgba(203,166,247,.07) 0,transparent 45%)}
+.layout{display:grid;grid-template-columns:270px 1fr;height:100vh}
+
+/* SIDEBAR */
+.sidebar{background:rgba(24,24,37,.75);backdrop-filter:blur(20px);border-right:1px solid var(--border);display:flex;flex-direction:column;height:100vh;overflow-y:auto}
+.brand{display:flex;align-items:center;gap:.75rem;padding:1.4rem 1.4rem .75rem}
+.brand-icon{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,var(--blue),var(--mauve));display:flex;align-items:center;justify-content:center;font-size:1.1rem;box-shadow:0 0 14px rgba(137,180,250,.4);flex-shrink:0}
+.brand h1{font-size:1rem;font-weight:800;background:linear-gradient(to right,var(--text),var(--lav));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.search-wrap{padding:.25rem 1rem .75rem;position:relative}
+.search-wrap input{width:100%;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:var(--r-sm);padding:.55rem .75rem .55rem 2.1rem;color:var(--text);font-family:inherit;font-size:.82rem;outline:none;transition:border-color .2s}
+.search-wrap input:focus{border-color:var(--lav)}
+.search-icon{position:absolute;left:1.65rem;top:50%;transform:translateY(-50%);opacity:.35;pointer-events:none}
+.nav-sec{padding:.2rem .9rem .4rem;font-size:.67rem;font-weight:700;text-transform:uppercase;color:var(--s2);letter-spacing:.8px}
+.nav-item{display:flex;align-items:center;gap:.65rem;padding:.62rem .9rem;margin:0 .4rem;border-radius:var(--r-sm);color:var(--sub0);cursor:pointer;transition:all .18s;font-size:.84rem;font-weight:500;border:1px solid transparent;user-select:none}
+.nav-item:hover{background:rgba(255,255,255,.03);color:var(--text)}
+.nav-item.active{background:rgba(180,190,254,.1);border-color:rgba(180,190,254,.2);color:var(--lav);font-weight:600}
+.nav-item .icon{width:27px;height:27px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:.95rem;flex-shrink:0}
+.nav-item.active .icon{background:rgba(180,190,254,.12)}
+.sidebar-footer{margin-top:auto;padding:.9rem}
+.online-badge{display:flex;align-items:center;gap:.5rem;font-size:.75rem;color:var(--green);padding:.55rem .7rem;background:rgba(166,227,161,.05);border-radius:var(--r-sm);border:1px solid rgba(166,227,161,.12)}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green);animation:pulse 2s infinite;flex-shrink:0}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+
+/* MAIN */
+.main{overflow-y:auto;padding:2rem 2.5rem}
+.panel{display:none}.panel.active{display:block}
+.page-title{font-size:1.65rem;font-weight:800;margin-bottom:.2rem;background:linear-gradient(135deg,var(--text) 40%,var(--lav));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.page-sub{color:var(--sub0);font-size:.88rem;margin-bottom:1.75rem}
+
+/* CARDS */
+.card{background:var(--glass);backdrop-filter:blur(12px);border:1px solid var(--border);border-radius:var(--r-lg);padding:1.4rem;margin-bottom:1.1rem;transition:border-color .2s}
+.card:hover{border-color:rgba(180,190,254,.1)}
+.card-title{font-size:.92rem;font-weight:700;color:var(--lav);display:flex;align-items:center;gap:.5rem;margin-bottom:1.1rem}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:1.1rem}
+.three-col{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem}
+
+/* STAT ROWS */
+.stat-row{display:flex;justify-content:space-between;align-items:center;padding:.55rem 0;border-bottom:1px solid rgba(255,255,255,.03)}
+.stat-row:last-child{border-bottom:none}
+.stat-label{color:var(--sub0);font-size:.83rem}
+.stat-val{font-size:.85rem;font-weight:600;color:var(--text);font-family:'JetBrains Mono',monospace;text-align:right;max-width:60%}
+.stat-val.blue{color:var(--blue)}.stat-val.green{color:var(--green)}.stat-val.yellow{color:var(--yellow)}.stat-val.red{color:var(--red)}.stat-val.mauve{color:var(--mauve)}.stat-val.teal{color:var(--teal)}
+
+/* PROGRESS */
+.prog-wrap{margin:.4rem 0}
+.prog-label{display:flex;justify-content:space-between;font-size:.78rem;color:var(--sub0);margin-bottom:.3rem}
+.prog{height:6px;background:var(--s0);border-radius:9px;overflow:hidden}
+.prog-fill{height:100%;border-radius:9px;transition:width .7s ease}
+
+/* SLIDERS */
+.slider-row{display:flex;align-items:center;justify-content:space-between;padding:.6rem 0;border-bottom:1px solid rgba(255,255,255,.03)}
+.slider-row:last-child{border-bottom:none}
+.slider-info h4{font-size:.88rem;font-weight:600}
+.slider-info p{font-size:.76rem;color:var(--sub0);margin-top:.12rem}
+.slider-ctrl{display:flex;align-items:center;gap:.7rem;min-width:190px}
+input[type=range]{-webkit-appearance:none;appearance:none;width:130px;height:5px;border-radius:9px;background:var(--s0);outline:none}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:15px;height:15px;border-radius:50%;background:var(--lav);cursor:pointer;box-shadow:0 0 8px rgba(180,190,254,.5);transition:transform .1s}
+input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.2)}
+.slider-tag{font-family:'JetBrains Mono',monospace;font-size:.8rem;color:var(--blue);min-width:42px;text-align:right}
+
+/* TOGGLE */
+.toggle-row{display:flex;align-items:center;justify-content:space-between;padding:.62rem 0;border-bottom:1px solid rgba(255,255,255,.03)}
+.toggle-row:last-child{border-bottom:none}
+.tw{position:relative;width:42px;height:23px;flex-shrink:0}
+.tw input{opacity:0;width:0;height:0}
+.ts{position:absolute;inset:0;background:var(--s0);border-radius:34px;cursor:pointer;transition:.3s}
+.ts::before{content:'';position:absolute;height:15px;width:15px;left:4px;bottom:4px;background:var(--sub0);border-radius:50%;transition:.3s}
+input:checked+.ts{background:var(--lav)}
+input:checked+.ts::before{transform:translateX(19px);background:var(--crust)}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;gap:.4rem;padding:.52rem 1rem;border-radius:var(--r-sm);font-size:.83rem;font-weight:600;cursor:pointer;border:1px solid;transition:all .18s;font-family:inherit}
+.btn-pri{background:linear-gradient(135deg,var(--blue),var(--lav));color:var(--crust);border-color:transparent;box-shadow:0 3px 10px rgba(180,190,254,.25)}
+.btn-pri:hover{transform:translateY(-1px);box-shadow:0 5px 14px rgba(180,190,254,.35)}
+.btn-ghost{background:transparent;color:var(--sub0);border-color:var(--border)}
+.btn-ghost:hover{background:rgba(255,255,255,.04);color:var(--text)}
+.btn-danger{background:rgba(243,139,168,.08);color:var(--red);border-color:rgba(243,139,168,.2)}
+.btn-danger:hover{background:rgba(243,139,168,.15)}
+.btn-sm{padding:.35rem .7rem;font-size:.78rem}
+.btn-row{display:flex;gap:.65rem;margin-top:.9rem;flex-wrap:wrap}
+.btn:disabled{opacity:.4;cursor:not-allowed;transform:none!important}
+
+/* BADGES */
+.badge{display:inline-flex;padding:.18rem .55rem;border-radius:6px;font-size:.73rem;font-weight:700;font-family:'JetBrains Mono',monospace;white-space:nowrap}
+.bg{background:rgba(166,227,161,.12);color:var(--green)}.bb{background:rgba(137,180,250,.12);color:var(--blue)}.br{background:rgba(243,139,168,.12);color:var(--red)}.by{background:rgba(249,226,175,.12);color:var(--yellow)}.bm{background:rgba(203,166,247,.12);color:var(--mauve)}.bt{background:rgba(148,226,213,.12);color:var(--teal)}
+.key-chip{display:inline-flex;align-items:center;background:var(--s0);border:1px solid var(--s1);border-radius:5px;padding:.12rem .4rem;font-family:'JetBrains Mono',monospace;font-size:.72rem;color:var(--blue);margin:.08rem}
+.key-chip.mod{color:var(--mauve);background:rgba(203,166,247,.08)}
+
+/* TABLES */
+.tbl-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:.82rem}
+th{color:var(--sub0);font-weight:700;padding:.7rem 1rem;text-align:left;border-bottom:1px solid var(--s0);font-size:.74rem;text-transform:uppercase;letter-spacing:.5px}
+td{padding:.75rem 1rem;border-bottom:1px solid rgba(255,255,255,.02);color:var(--sub1)}
+td:first-child{color:var(--text);font-weight:500}
+tr:last-child td{border:none}
+tr:hover td{background:rgba(255,255,255,.01)}
+
+/* WIFI NETWORK CARDS */
+.wifi-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:.75rem;margin-top:.75rem}
+.wifi-card{border:1px solid var(--border);border-radius:var(--r);padding:1rem;background:rgba(255,255,255,.01);transition:border-color .2s}
+.wifi-card:hover{border-color:rgba(180,190,254,.12)}
+.wifi-card.active-net{border-color:rgba(166,227,161,.3);background:rgba(166,227,161,.03)}
+.wifi-ssid{font-weight:700;font-size:.92rem;margin-bottom:.25rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.wifi-meta{font-size:.75rem;color:var(--sub0);margin-bottom:.65rem;font-family:'JetBrains Mono',monospace}
+.wifi-actions{display:flex;gap:.4rem;flex-wrap:wrap}
+.signal-bar{font-family:'JetBrains Mono',monospace;font-size:.85rem;color:var(--green)}
+
+/* POWER BUTTONS */
+.power-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:.65rem}
+.power-btn{background:rgba(255,255,255,.02);border:1px solid var(--border);border-radius:var(--r);padding:1.1rem .5rem;display:flex;flex-direction:column;align-items:center;gap:.45rem;cursor:pointer;font-size:.79rem;font-weight:600;color:var(--sub0);transition:all .22s;font-family:inherit}
+.power-btn:hover{transform:translateY(-2px)}
+.power-btn-icon{font-size:1.4rem}
+.power-btn.lock:hover{background:rgba(137,180,250,.08);border-color:var(--blue);color:var(--blue)}
+.power-btn.logout:hover{background:rgba(250,179,135,.08);border-color:var(--peach);color:var(--peach)}
+.power-btn.suspend:hover{background:rgba(116,199,236,.08);border-color:var(--sapph);color:var(--sapph)}
+.power-btn.reboot:hover{background:rgba(166,227,161,.08);border-color:var(--green);color:var(--green)}
+.power-btn.shutdown:hover{background:rgba(243,139,168,.08);border-color:var(--red);color:var(--red)}
+
+/* GOVERNOR CARDS */
+.gov-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+.gov-card{border:2px solid var(--border);border-radius:var(--r);padding:1.25rem;cursor:pointer;transition:all .22s;text-align:center}
+.gov-card:hover{border-color:rgba(180,190,254,.2)}
+.gov-card.active-gov.perf{border-color:var(--red);background:rgba(243,139,168,.06)}
+.gov-card.active-gov.save{border-color:var(--green);background:rgba(166,227,161,.06)}
+.gov-icon{font-size:2.2rem;margin-bottom:.5rem}
+.gov-name{font-size:1rem;font-weight:800;margin-bottom:.2rem}
+.gov-desc{font-size:.78rem;color:var(--sub0)}
+
+/* METRIC CARDS */
+.metric-card{background:rgba(255,255,255,.02);border:1px solid var(--border);border-radius:var(--r);padding:1.1rem}
+.metric-label{font-size:.74rem;color:var(--sub0);font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:.3rem}
+.metric-value{font-size:1.3rem;font-weight:800;font-family:'JetBrains Mono',monospace}
+.metric-sub{font-size:.75rem;color:var(--sub0);margin-top:.15rem}
+
+/* BT DEVICE CARD */
+.bt-card{display:flex;align-items:center;justify-content:space-between;padding:.9rem;border:1px solid var(--border);border-radius:var(--r);background:rgba(255,255,255,.01);margin-bottom:.6rem;transition:border-color .2s}
+.bt-card:hover{border-color:rgba(180,190,254,.12)}
+.bt-card.connected-dev{border-color:rgba(166,227,161,.25);background:rgba(166,227,161,.03)}
+.bt-info{display:flex;align-items:center;gap:.9rem}
+.bt-icon-wrap{width:40px;height:40px;border-radius:10px;background:rgba(180,190,254,.08);display:flex;align-items:center;justify-content:center;font-size:1.3rem}
+.bt-name{font-weight:700;font-size:.9rem}
+.bt-mac{font-family:'JetBrains Mono',monospace;font-size:.74rem;color:var(--sub0)}
+.bt-actions{display:flex;gap:.4rem}
+
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.65);backdrop-filter:blur(6px);z-index:100;display:none;align-items:center;justify-content:center}
+.modal-overlay.open{display:flex}
+.modal{background:var(--mantle);border:1px solid var(--border);border-radius:var(--r-lg);padding:2rem;min-width:380px;max-width:480px;width:90%}
+.modal h3{font-size:1.1rem;font-weight:800;margin-bottom:1.25rem;display:flex;align-items:center;gap:.5rem}
+.modal input[type=text],.modal input[type=password]{width:100%;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:var(--r-sm);padding:.7rem 1rem;color:var(--text);font-family:inherit;font-size:.9rem;outline:none;margin-bottom:1rem;transition:border-color .2s}
+.modal input:focus{border-color:var(--lav)}
+.modal-actions{display:flex;gap:.75rem;justify-content:flex-end;margin-top:.5rem}
+
+/* CONFIRM DIALOG */
+.confirm-box{position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(4px);z-index:200;display:none;align-items:center;justify-content:center}
+.confirm-box.open{display:flex}
+.confirm-inner{background:var(--mantle);border:1px solid rgba(243,139,168,.3);border-radius:var(--r-lg);padding:1.75rem;max-width:360px;width:90%;text-align:center}
+.confirm-inner h3{margin-bottom:.75rem;font-size:1.05rem}
+.confirm-inner p{color:var(--sub0);font-size:.88rem;margin-bottom:1.25rem}
+.confirm-acts{display:flex;gap:.75rem;justify-content:center}
+
+/* TOAST */
+.toast{position:fixed;bottom:1.5rem;right:1.75rem;padding:.8rem 1.2rem;border-radius:var(--r);border:1px solid;display:flex;align-items:center;gap:.55rem;font-size:.85rem;font-weight:500;z-index:9999;backdrop-filter:blur(10px);transform:translateY(80px);opacity:0;transition:all .3s cubic-bezier(.16,1,.3,1);max-width:360px}
+.toast.show{transform:translateY(0);opacity:1}
+.toast.success{background:rgba(24,24,37,.95);border-color:var(--green);color:var(--green)}
+.toast.error{background:rgba(24,24,37,.95);border-color:var(--red);color:var(--red)}
+.toast.info{background:rgba(24,24,37,.95);border-color:var(--blue);color:var(--blue)}
+
+/* LOADING */
+.loading{display:flex;align-items:center;gap:.65rem;color:var(--sub0);padding:1.5rem}
+@keyframes spin{to{transform:rotate(360deg)}}
+.spinner{width:18px;height:18px;border:2px solid var(--s0);border-top-color:var(--lav);border-radius:50%;animation:spin .8s linear infinite;flex-shrink:0}
+
+/* COLOR PICKER ROW */
+.color-row{display:flex;align-items:center;justify-content:space-between;padding:.6rem 0;border-bottom:1px solid rgba(255,255,255,.03)}
+.color-row:last-child{border-bottom:none}
+.color-preview{width:28px;height:28px;border-radius:7px;border:2px solid var(--border);cursor:pointer;transition:transform .15s}
+.color-preview:hover{transform:scale(1.1)}
+
+/* KBD FILTER */
+.kbd-filter{display:flex;gap:.4rem;flex-wrap:wrap;margin-bottom:.85rem}
+.filter-btn{padding:.3rem .65rem;border-radius:6px;font-size:.76rem;font-weight:600;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--sub0);transition:all .15s;font-family:inherit}
+.filter-btn.active,.filter-btn:hover{background:rgba(180,190,254,.1);border-color:rgba(180,190,254,.25);color:var(--lav)}
+
+/* ABOUT */
+.about-hero{display:flex;align-items:center;gap:2rem;padding:2rem;background:linear-gradient(135deg,rgba(137,180,250,.06),rgba(203,166,247,.06));border:1px solid var(--border);border-radius:var(--r-lg);margin-bottom:1.1rem}
+.about-logo{font-size:4.5rem}
+.about-name{font-size:1.9rem;font-weight:800;background:linear-gradient(135deg,var(--text),var(--lav));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.about-tag{color:var(--sub0);margin-top:.25rem;font-size:.9rem}
+
+/* STARTUP */
+.startup-item{display:flex;align-items:center;gap:.85rem;padding:.7rem;border-radius:var(--r-sm);border:1px solid var(--border);background:rgba(255,255,255,.01);margin-bottom:.45rem}
+.startup-cmd{font-family:'JetBrains Mono',monospace;font-size:.8rem;color:var(--teal);flex:1;word-break:break-all;min-width:0}
+
+/* NUMBER INPUT */
+.num-input{background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:var(--r-sm);padding:.45rem .65rem;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:.88rem;width:80px;outline:none;text-align:center;transition:border-color .2s}
+.num-input:focus{border-color:var(--lav)}
+
+/* TZ SEARCH */
+.tz-select{width:100%;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:var(--r-sm);padding:.6rem .75rem;color:var(--text);font-family:inherit;font-size:.88rem;outline:none}
+.tz-select:focus{border-color:var(--lav)}
+.tz-select option{background:var(--mantle)}
+</style>
+</head>
+<body>
+<div class="layout">
+
+<!-- ═══════════════ SIDEBAR ═══════════════ -->
+<aside class="sidebar">
+  <div class="brand">
+    <div class="brand-icon">⚙️</div>
+    <h1>System Settings</h1>
+  </div>
+  <div class="search-wrap">
+    <svg class="search-icon" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+    <input type="text" placeholder="Search settings…" oninput="filterNav(this.value)">
+  </div>
+  <div class="nav-sec">General</div>
+  <div class="nav-item active" data-p="overview" onclick="show('overview')"><div class="icon">🖥️</div>System Overview</div>
+  <div class="nav-item" data-p="network" onclick="show('network')"><div class="icon">📶</div>Network & WiFi</div>
+  <div class="nav-item" data-p="bluetooth" onclick="show('bluetooth')"><div class="icon">📡</div>Bluetooth</div>
+  <div class="nav-item" data-p="audio" onclick="show('audio')"><div class="icon">🔊</div>Sound</div>
+  <div class="nav-item" data-p="display" onclick="show('display')"><div class="icon">🖥️</div>Display & Brightness</div>
+  <div class="nav-item" data-p="power" onclick="show('power')"><div class="icon">🔋</div>Power & Battery</div>
+  <div class="nav-item" data-p="storage" onclick="show('storage')"><div class="icon">💾</div>Storage</div>
+  <div class="nav-sec" style="margin-top:.4rem">Identity</div>
+  <div class="nav-item" data-p="users" onclick="show('users')"><div class="icon">👤</div>Users & Accounts</div>
+  <div class="nav-item" data-p="datetime" onclick="show('datetime')"><div class="icon">🕐</div>Date, Time & Region</div>
+  <div class="nav-sec" style="margin-top:.4rem">Desktop</div>
+  <div class="nav-item" data-p="compositor" onclick="show('compositor')"><div class="icon">🎨</div>Compositor</div>
+  <div class="nav-item" data-p="startup" onclick="show('startup')"><div class="icon">🚀</div>Startup Apps</div>
+  <div class="nav-item" data-p="keybinds" onclick="show('keybinds')"><div class="icon">🔑</div>Keybindings</div>
+  <div class="nav-item" data-p="processes" onclick="show('processes')"><div class="icon">📊</div>Processes</div>
+  <div class="nav-sec" style="margin-top:.4rem">Info</div>
+  <div class="nav-item" data-p="about" onclick="show('about')"><div class="icon">ℹ️</div>About This System</div>
+  <div class="sidebar-footer">
+    <div class="online-badge"><span class="dot"></span>HyprControl · Port 50000</div>
+  </div>
+</aside>
+
+<!-- ═══════════════ MAIN ═══════════════ -->
+<main class="main">
+
+<!-- ── OVERVIEW ── -->
+<section class="panel active" id="panel-overview">
+  <div class="page-title">System Overview</div>
+  <div class="page-sub">Live hardware status and quick system actions</div>
+  <div class="three-col" id="ov-metrics" style="margin-bottom:1.1rem"><div class="loading"><div class="spinner"></div>Loading…</div></div>
+  <div class="card" id="ov-details"><div class="loading"><div class="spinner"></div></div></div>
+  <div class="card">
+    <div class="card-title">⚡ Session Actions</div>
+    <div class="power-grid">
+      <button class="power-btn lock"    onclick="act('lock')">    <span class="power-btn-icon">🔒</span>Lock</button>
+      <button class="power-btn logout"  onclick="act('logout')">  <span class="power-btn-icon">🚪</span>Log Out</button>
+      <button class="power-btn suspend" onclick="act('suspend')"> <span class="power-btn-icon">💤</span>Suspend</button>
+      <button class="power-btn reboot"  onclick="act('reboot')">  <span class="power-btn-icon">🔄</span>Reboot</button>
+      <button class="power-btn shutdown"onclick="act('shutdown')"><span class="power-btn-icon">⏻</span>Shutdown</button>
+    </div>
+  </div>
+</section>
+
+<!-- ── NETWORK ── -->
+<section class="panel" id="panel-network">
+  <div class="page-title">Network & WiFi</div>
+  <div class="page-sub">Manage connections, scan for networks, and configure DNS</div>
+  <div class="card">
+    <div class="card-title">📶 WiFi Control</div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem">
+      <div>
+        <h4 style="font-size:.9rem;font-weight:600">WiFi Radio</h4>
+        <p style="font-size:.76rem;color:var(--sub0)">Enable or disable wireless networking</p>
+      </div>
+      <div style="display:flex;align-items:center;gap:.75rem">
+        <label class="tw" id="wifi-toggle-wrap"><input type="checkbox" id="wifi-toggle" onchange="toggleWifi(this.checked)"><span class="ts"></span></label>
+        <button class="btn btn-ghost btn-sm" onclick="scanWifi(this)">🔍 Scan</button>
+      </div>
+    </div>
+    <div id="wifi-status-bar" style="font-size:.82rem;color:var(--sub0);margin-bottom:.5rem"></div>
+  </div>
+  <div class="card">
+    <div class="card-title">📡 Available Networks</div>
+    <div id="wifi-list"><div class="loading"><div class="spinner"></div>Scanning…</div></div>
+  </div>
+  <div id="net-interfaces-card"></div>
+</section>
+
+<!-- ── BLUETOOTH ── -->
+<section class="panel" id="panel-bluetooth">
+  <div class="page-title">Bluetooth</div>
+  <div class="page-sub">Pair and manage wireless devices</div>
+  <div class="card">
+    <div class="card-title">📡 Bluetooth Controller</div>
+    <div class="toggle-row">
+      <div><h4 class="slider-info" style="font-size:.9rem;font-weight:600">Bluetooth Power</h4><p style="font-size:.76rem;color:var(--sub0)">Enable or disable Bluetooth radio</p></div>
+      <label class="tw"><input type="checkbox" id="bt-power" onchange="btToggle(this.checked)"><span class="ts"></span></label>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-ghost btn-sm" onclick="btScan(this)">🔍 Scan for Devices (10s)</button>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">📱 Paired & Known Devices</div>
+    <div id="bt-devices"><div class="loading"><div class="spinner"></div></div></div>
+  </div>
+</section>
+
+<!-- ── AUDIO ── -->
+<section class="panel" id="panel-audio">
+  <div class="page-title">Sound</div>
+  <div class="page-sub">Control volume, microphone, and audio devices</div>
+  <div class="card" id="audio-out">
+    <div class="card-title">🔊 Output (Speakers)</div>
+    <div class="loading"><div class="spinner"></div></div>
+  </div>
+  <div class="card" id="audio-in">
+    <div class="card-title">🎙️ Input (Microphone)</div>
+    <div class="loading"><div class="spinner"></div></div>
+  </div>
+  <div class="card" id="audio-devices">
+    <div class="card-title">🎛️ Audio Devices</div>
+    <div class="loading"><div class="spinner"></div></div>
+  </div>
+</section>
+
+<!-- ── DISPLAY ── -->
+<section class="panel" id="panel-display">
+  <div class="page-title">Display & Brightness</div>
+  <div class="page-sub">Monitor settings, brightness control, and GPU information</div>
+  <div class="card">
+    <div class="card-title">☀️ Screen Brightness</div>
+    <div class="slider-row">
+      <div class="slider-info"><h4>Display Brightness</h4><p>Controls nvidia backlight via brightnessctl</p></div>
+      <div class="slider-ctrl">
+        <input type="range" min="5" max="100" id="brightness-slider" oninput="onBrightnessSlide(this.value)">
+        <span class="slider-tag" id="brightness-val">—%</span>
+      </div>
+    </div>
+  </div>
+  <div id="display-monitors"></div>
+  <div id="display-gpu"></div>
+</section>
+
+<!-- ── POWER ── -->
+<section class="panel" id="panel-power">
+  <div class="page-title">Power & Battery</div>
+  <div class="page-sub">CPU performance mode, battery status, and sleep timeouts</div>
+  <div class="card">
+    <div class="card-title">⚡ CPU Performance Profile</div>
+    <div class="gov-grid" id="gov-grid"><div class="loading"><div class="spinner"></div></div></div>
+    <div id="gov-cur" style="margin-top:.75rem;font-size:.8rem;color:var(--sub0)"></div>
+  </div>
+  <div class="card" id="battery-card"><div class="card-title">🔋 Battery</div><div class="loading"><div class="spinner"></div></div></div>
+  <div class="card">
+    <div class="card-title">⏱️ Idle & Sleep Timeouts</div>
+    <p style="color:var(--sub0);font-size:.82rem;margin-bottom:1rem">Edit then click <strong style="color:var(--lav)">Save Timeouts</strong> to write to hypridle.conf and restart idle daemon.</p>
+    <div id="timeout-rows"><div class="loading"><div class="spinner"></div></div></div>
+    <div class="btn-row">
+      <button class="btn btn-pri btn-sm" onclick="saveTimeouts()">💾 Save Timeouts</button>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">⚡ Session Power</div>
+    <div class="power-grid">
+      <button class="power-btn lock"    onclick="act('lock')">    <span class="power-btn-icon">🔒</span>Lock</button>
+      <button class="power-btn logout"  onclick="act('logout')">  <span class="power-btn-icon">🚪</span>Log Out</button>
+      <button class="power-btn suspend" onclick="act('suspend')"> <span class="power-btn-icon">💤</span>Suspend</button>
+      <button class="power-btn reboot"  onclick="act('reboot')">  <span class="power-btn-icon">🔄</span>Reboot</button>
+      <button class="power-btn shutdown"onclick="act('shutdown')"><span class="power-btn-icon">⏻</span>Shutdown</button>
+    </div>
+  </div>
+</section>
+
+<!-- ── STORAGE ── -->
+<section class="panel" id="panel-storage">
+  <div class="page-title">Storage</div>
+  <div class="page-sub">Disk usage, filesystems, and block devices</div>
+  <div id="storage-content"><div class="loading"><div class="spinner"></div></div></div>
+</section>
+
+<!-- ── USERS ── -->
+<section class="panel" id="panel-users">
+  <div class="page-title">Users & Accounts</div>
+  <div class="page-sub">User profile, groups, login shell, and login history</div>
+  <div id="users-content"><div class="loading"><div class="spinner"></div></div></div>
+</section>
+
+<!-- ── DATE & TIME ── -->
+<section class="panel" id="panel-datetime">
+  <div class="page-title">Date, Time & Region</div>
+  <div class="page-sub">Timezone, NTP synchronization, and locale settings</div>
+  <div class="card">
+    <div class="card-title">🕐 Current Time</div>
+    <div style="font-size:2.5rem;font-weight:800;font-family:'JetBrains Mono',monospace;color:var(--blue);margin-bottom:.5rem" id="live-clock">—</div>
+    <div id="dt-info"><div class="loading"><div class="spinner"></div></div></div>
+  </div>
+  <div class="card">
+    <div class="card-title">🌍 Timezone</div>
+    <div class="stat-row">
+      <span class="stat-label">Current Timezone</span>
+      <span class="stat-val blue" id="cur-tz">—</span>
+    </div>
+    <div style="margin-top:1rem">
+      <p style="font-size:.8rem;color:var(--sub0);margin-bottom:.5rem">Select a new timezone:</p>
+      <select class="tz-select" id="tz-select" style="margin-bottom:.75rem"><option>Loading timezones…</option></select>
+      <button class="btn btn-pri btn-sm" onclick="setTimezone()">🌍 Apply Timezone</button>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">🔄 NTP & Clock Sync</div>
+    <div class="toggle-row">
+      <div><h4 style="font-size:.9rem;font-weight:600">Automatic Time Sync (NTP)</h4><p style="font-size:.76rem;color:var(--sub0)">Synchronize system clock with internet time servers</p></div>
+      <label class="tw"><input type="checkbox" id="ntp-toggle" onchange="setNtp(this.checked)"><span class="ts"></span></label>
+    </div>
+    <div id="ntp-status" style="margin-top:.75rem;font-size:.82rem;color:var(--sub0)"></div>
+  </div>
+</section>
+
+<!-- ── COMPOSITOR ── -->
+<section class="panel" id="panel-compositor">
+  <div class="page-title">Compositor Settings</div>
+  <div class="page-sub">Hyprland visual properties — changes hot-reload your compositor instantly</div>
+  <div id="comp-content"><div class="loading"><div class="spinner"></div></div></div>
+</section>
+
+<!-- ── STARTUP ── -->
+<section class="panel" id="panel-startup">
+  <div class="page-title">Startup Applications</div>
+  <div class="page-sub">Services that auto-launch with Hyprland (parsed from hyprland.conf)</div>
+  <div id="startup-content"><div class="loading"><div class="spinner"></div></div></div>
+</section>
+
+<!-- ── KEYBINDS ── -->
+<section class="panel" id="panel-keybinds">
+  <div class="page-title">Keybindings</div>
+  <div class="page-sub">All keyboard shortcuts from hyprland.conf — searchable and filterable</div>
+  <div class="card">
+    <input type="text" id="kbd-search" style="width:100%;background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:var(--r-sm);padding:.6rem .9rem;color:var(--text);font-family:inherit;font-size:.85rem;outline:none;margin-bottom:.85rem" placeholder="Search by key, modifier, action…" oninput="filterKbd(this.value)">
+    <div class="kbd-filter" id="kbd-cats"></div>
+    <div class="tbl-wrap"><table><thead><tr><th>Modifiers</th><th>Key</th><th>Action</th><th>Arguments</th><th>Category</th></tr></thead>
+    <tbody id="kbd-body"><tr><td colspan="5"><div class="loading"><div class="spinner"></div></div></td></tr></tbody></table></div>
+  </div>
+</section>
+
+<!-- ── PROCESSES ── -->
+<section class="panel" id="panel-processes">
+  <div class="page-title">Running Processes</div>
+  <div class="page-sub">Top processes by CPU and memory · auto-refreshes every 5 seconds</div>
+  <div class="card" style="padding:.9rem 1rem;margin-bottom:1rem;display:flex;align-items:center;gap:1rem">
+    <input type="text" id="proc-search" style="flex:1;background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:var(--r-sm);padding:.55rem .9rem;color:var(--text);font-family:inherit;font-size:.85rem;outline:none" placeholder="Search processes…" oninput="filterProcs(this.value)">
+    <span id="proc-total" style="font-size:.8rem;color:var(--sub0);white-space:nowrap"></span>
+    <button class="btn btn-ghost btn-sm" onclick="loadProcesses()">🔄 Refresh</button>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.1rem" id="proc-content">
+    <div class="loading"><div class="spinner"></div></div>
+  </div>
+</section>
+
+<!-- ── ABOUT ── -->
+<section class="panel" id="panel-about">
+  <div class="about-hero">
+    <div class="about-logo">🐧</div>
+    <div>
+      <div class="about-name" id="about-os">Arch Linux</div>
+      <div class="about-tag" id="about-sub">Loading…</div>
+    </div>
+  </div>
+  <div id="about-content"><div class="loading"><div class="spinner"></div></div></div>
+</section>
+
+</main>
+</div>
+
+<!-- WiFi Password Modal -->
+<div class="modal-overlay" id="wifi-modal">
+  <div class="modal">
+    <h3>🔐 Connect to WiFi</h3>
+    <p style="color:var(--sub0);font-size:.85rem;margin-bottom:1rem">Connecting to: <strong id="modal-ssid" style="color:var(--blue)"></strong></p>
+    <input type="password" id="wifi-pwd" placeholder="Enter WiFi password…">
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeWifiModal()">Cancel</button>
+      <button class="btn btn-pri" onclick="connectWifi()">Connect</button>
+    </div>
+  </div>
+</div>
+
+<!-- Kill Confirm Dialog -->
+<div class="confirm-box" id="kill-dialog">
+  <div class="confirm-inner">
+    <h3>⚠️ Terminate Process?</h3>
+    <p>Kill process <strong id="kill-pid-label" style="color:var(--red)"></strong>: <span id="kill-cmd-label" style="color:var(--sub0)"></span></p>
+    <div class="confirm-acts">
+      <button class="btn btn-ghost" onclick="document.getElementById('kill-dialog').classList.remove('open')">Cancel</button>
+      <button class="btn btn-danger" onclick="confirmKill()">Kill Process</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+const API = 'http://localhost:50000';
+let allBinds=[], activeCat='All', allProcs=[], pendingKillPid=null;
+let compState={}, brightnessDebounce=null;
+
+// ─── HELPERS ───
+async function api(path, opts){
+  const r = await fetch(API+path, opts);
+  const d = await r.json();
+  if(!r.ok) throw new Error(d.error||'Request failed');
+  return d;
+}
+function toast(msg,type='info',dur=3500){
+  const t=document.getElementById('toast');
+  const icons={success:'✅',error:'❌',info:'ℹ️'};
+  t.textContent=`${icons[type]||'ℹ️'} ${msg}`;
+  t.className=`toast ${type} show`;
+  setTimeout(()=>t.classList.remove('show'),dur);
+}
+function post(path,body){return api(path,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});}
+function badge(t,cls){return `<span class="badge ${cls}">${t}</span>`;}
+function sr(label,val,cls=''){return `<div class="stat-row"><span class="stat-label">${label}</span><span class="stat-val ${cls}">${val}</span></div>`;}
+function barColor(p){return p>=85?'linear-gradient(90deg,var(--red),var(--peach))':p>=65?'linear-gradient(90deg,var(--yellow),var(--peach))':'linear-gradient(90deg,var(--blue),var(--lav))';}
+function gb(kb){return (kb/1024/1024).toFixed(1)+' GB';}
+function loading(el){document.getElementById(el)&&(document.getElementById(el).innerHTML='<div class="loading"><div class="spinner"></div>Loading…</div>');}
+
+// ─── NAV ───
+function show(name){
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('panel-'+name)?.classList.add('active');
+  document.querySelector(`[data-p="${name}"]`)?.classList.add('active');
+  (loaders[name]||Promise.resolve)();
+}
+function filterNav(q){
+  q=q.toLowerCase();
+  document.querySelectorAll('.nav-item').forEach(i=>{i.style.display=i.textContent.toLowerCase().includes(q)?'':'none';});
+}
+
+// ─── OVERVIEW ───
+async function loadOverview(){
+  try{
+    const s=await api('/api/system');
+    const rPct=Math.round(s.ram.used/s.ram.total*100);
+    document.getElementById('ov-metrics').innerHTML=`
+      <div class="metric-card"><div class="metric-label">💻 System</div><div class="metric-value" style="font-size:1rem;color:var(--blue)">${s.hostname}</div><div class="metric-sub">${s.os}</div></div>
+      <div class="metric-card"><div class="metric-label">⏱️ Uptime</div><div class="metric-value" style="font-size:.9rem;color:var(--green)">${s.uptime.replace('up ','')}</div><div class="metric-sub">Running</div></div>
+      <div class="metric-card"><div class="metric-label">🧠 RAM</div><div class="metric-value" style="color:${rPct>80?'var(--red)':rPct>60?'var(--yellow)':'var(--lav)'}">${rPct}%</div><div class="metric-sub">${gb(s.ram.used)} / ${gb(s.ram.total)}</div></div>`;
+    document.getElementById('ov-details').innerHTML=`
+      <div class="card-title">⚙️ System Details</div>
+      ${sr('Operating System',s.os)}${sr('Kernel',s.kernel,'blue')}${sr('Hostname',s.hostname,'mauve')}
+      ${sr('CPU',s.cpu.model,'blue')}${sr('CPU Threads',s.cpu.cores)}
+      ${sr('RAM Total',gb(s.ram.total))}${sr('RAM Used',`${gb(s.ram.used)} (${rPct}%)`,rPct>80?'red':rPct>60?'yellow':'green')}
+      ${sr('Motherboard',s.firmware.boardVendor+' '+s.firmware.boardName)}
+      ${sr('BIOS',s.firmware.biosVendor+' '+s.firmware.biosVersion)}`;
+  }catch(e){toast('System load error: '+e.message,'error');}
+}
+
+// ─── NETWORK ───
+let pendingWifiSSID='';
+async function loadNetwork(){
+  try{
+    const d=await api('/api/network');
+    document.getElementById('wifi-toggle').checked=d.wifiEnabled;
+    if(d.interfaces.find(i=>i.name==='wlo1')?.ssid){
+      document.getElementById('wifi-status-bar').innerHTML=`Connected to: <strong style="color:var(--green)">${d.interfaces.find(i=>i.name==='wlo1').ssid}</strong>`;
+    }
+    const ifaceCard=document.getElementById('net-interfaces-card');
+    const nonLoIfaces=d.interfaces.filter(i=>i.name!=='lo');
+    ifaceCard.innerHTML=nonLoIfaces.map(i=>`
+      <div class="card">
+        <div class="card-title">${i.name==='wlo1'?'📶':'🔌'} ${i.name}</div>
+        ${sr('Status',badge(i.state||'UNKNOWN',i.state==='UP'?'bg':'br'))}
+        ${i.ssid?sr('WiFi Network',i.ssid,'blue'):''}
+        ${sr('MAC Address',i.mac||'—')}
+        ${(i.addresses||[]).map(a=>sr(`${a.type==='inet'?'IPv4':'IPv6'} Address`,a.addr,'teal')).join('')}
+        ${d.gateway?sr('Gateway',d.gateway):''}
+        ${d.dns.map((dns,idx)=>sr(`DNS ${idx+1}`,dns,'blue')).join('')}
+      </div>`).join('');
+  }catch(e){toast('Network error: '+e.message,'error');}
+  scanWifi();
+}
+
+async function scanWifi(btn){
+  const el=document.getElementById('wifi-list');
+  el.innerHTML='<div class="loading"><div class="spinner"></div>Scanning for networks…</div>';
+  if(btn){btn.disabled=true;btn.textContent='🔄 Scanning…';}
+  try{
+    const nets=await api('/api/wifi/scan');
+    if(!nets.length){el.innerHTML='<p style="color:var(--sub0);padding:.5rem">No networks found.</p>';return;}
+    el.innerHTML=`<div class="wifi-grid">${nets.map(n=>`
+      <div class="wifi-card ${n.active?'active-net':''}">
+        <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:.3rem">
+          <div class="wifi-ssid" title="${n.ssid}">${n.ssid||'Hidden Network'}</div>
+          ${n.active?badge('CONNECTED','bg'):n.saved?badge('SAVED','bb'):''}
+        </div>
+        <div class="wifi-meta">
+          <span class="signal-bar">${n.bars}</span> ${n.signal}% · CH${n.chan} · ${n.security||'Open'}
+        </div>
+        <div class="wifi-actions">
+          ${n.active
+            ?`<button class="btn btn-danger btn-sm" onclick="disconnectWifi()">Disconnect</button>`
+            :`<button class="btn btn-pri btn-sm" onclick="openWifiModal('${n.ssid.replace(/'/g,"\\'")}',${!n.saved&&n.security!=='--'})">Connect</button>`}
+          ${n.saved&&!n.active?`<button class="btn btn-ghost btn-sm" onclick="forgetWifi('${n.ssid.replace(/'/g,"\\'")}')">Forget</button>`:''}
+        </div>
+      </div>`).join('')}</div>`;
+  }catch(e){el.innerHTML=`<p style="color:var(--red)">Scan failed: ${e.message}</p>`;}
+  if(btn){btn.disabled=false;btn.textContent='🔍 Scan';}
+}
+
+function openWifiModal(ssid,needsPwd){
+  pendingWifiSSID=ssid;
+  document.getElementById('modal-ssid').textContent=ssid;
+  document.getElementById('wifi-pwd').value='';
+  if(!needsPwd){connectWifi();return;}
+  document.getElementById('wifi-modal').classList.add('open');
+}
+function closeWifiModal(){document.getElementById('wifi-modal').classList.remove('open');}
+async function connectWifi(){
+  closeWifiModal();
+  const pwd=document.getElementById('wifi-pwd').value;
+  try{
+    toast(`Connecting to ${pendingWifiSSID}…`,'info');
+    await post('/api/wifi/connect',{ssid:pendingWifiSSID,password:pwd});
+    toast(`Connected to ${pendingWifiSSID}`,'success');
+    setTimeout(()=>{scanWifi();loadNetwork();},2000);
+  }catch(e){toast('Connection failed: '+e.message,'error');}
+}
+async function disconnectWifi(){
+  try{await post('/api/wifi/disconnect',{});toast('Disconnected from WiFi','success');setTimeout(scanWifi,1500);}
+  catch(e){toast('Error: '+e.message,'error');}
+}
+async function forgetWifi(name){
+  try{await post('/api/wifi/forget',{name});toast(`Removed network: ${name}`,'success');setTimeout(scanWifi,1000);}
+  catch(e){toast('Error: '+e.message,'error');}
+}
+async function toggleWifi(en){
+  try{await post('/api/wifi/toggle',{enable:en});toast(en?'WiFi enabled':'WiFi disabled','success');}
+  catch(e){toast('Error: '+e.message,'error');}
+}
+
+// ─── BLUETOOTH ───
+async function loadBluetooth(){
+  try{
+    const d=await api('/api/bluetooth');
+    document.getElementById('bt-power').checked=d.powered;
+    const icons={'audio-headset':'🎧','audio-headphones':'🎧','input-keyboard':'⌨️','input-mouse':'🖱️','phone':'📱','computer':'💻'};
+    const icon=mac=>icons[d.devices.find(x=>x.mac===mac)?.icon||'']||'📡';
+    document.getElementById('bt-devices').innerHTML=d.devices.length?d.devices.map(dev=>`
+      <div class="bt-card ${dev.connected?'connected-dev':''}">
+        <div class="bt-info">
+          <div class="bt-icon-wrap">${icon(dev.mac)}</div>
+          <div>
+            <div class="bt-name">${dev.name}</div>
+            <div class="bt-mac">${dev.mac}</div>
+            <div style="margin-top:.2rem">${dev.connected?badge('CONNECTED','bg'):dev.paired?badge('PAIRED','bb'):badge('KNOWN','bt')}</div>
+          </div>
+        </div>
+        <div class="bt-actions">
+          ${dev.connected
+            ?`<button class="btn btn-ghost btn-sm" onclick="btDisconnect('${dev.mac}')">Disconnect</button>`
+            :`<button class="btn btn-pri btn-sm" onclick="btConnect('${dev.mac}')">Connect</button>`}
+          <button class="btn btn-danger btn-sm" onclick="btRemove('${dev.mac}','${dev.name}')">Remove</button>
+        </div>
+      </div>`).join(''):'<p style="color:var(--sub0)">No paired devices found. Click Scan to discover new devices.</p>';
+  }catch(e){toast('Bluetooth error: '+e.message,'error');}
+}
+async function btToggle(en){
+  try{await post('/api/bluetooth/toggle',{enable:en});toast(en?'Bluetooth on':'Bluetooth off','success');}
+  catch(e){toast('Error: '+e.message,'error');}
+}
+async function btScan(btn){
+  btn.disabled=true;btn.textContent='🔄 Scanning 10s…';
+  toast('Scanning for Bluetooth devices…','info',10000);
+  try{const d=await post('/api/bluetooth/scan',{});toast(`Found ${d.devices.length} devices`,'success');loadBluetooth();}
+  catch(e){toast('Scan error: '+e.message,'error');}
+  btn.disabled=false;btn.textContent='🔍 Scan for Devices (10s)';
+}
+async function btConnect(mac){
+  toast('Connecting…','info');
+  try{await post('/api/bluetooth/connect',{mac});toast('Connected!','success');setTimeout(loadBluetooth,1500);}
+  catch(e){toast('Connect failed: '+e.message,'error');}
+}
+async function btDisconnect(mac){
+  try{await post('/api/bluetooth/disconnect',{mac});toast('Disconnected','success');setTimeout(loadBluetooth,1000);}
+  catch(e){toast('Error: '+e.message,'error');}
+}
+async function btRemove(mac,name){
+  if(!confirm(`Remove device "${name}"?`))return;
+  try{await post('/api/bluetooth/remove',{mac});toast(`Removed ${name}`,'success');setTimeout(loadBluetooth,1000);}
+  catch(e){toast('Error: '+e.message,'error');}
+}
+
+// ─── AUDIO ───
+async function loadAudio(){
+  try{
+    const d=await api('/api/audio');
+    document.getElementById('audio-out').innerHTML=`
+      <div class="card-title">🔊 Output (Speakers)</div>
+      <div class="slider-row">
+        <div class="slider-info"><h4>Master Volume</h4><p>Speaker output level (0–150%)</p></div>
+        <div class="slider-ctrl">
+          <input type="range" min="0" max="150" value="${d.volume}" id="vol-slider" oninput="setVol(this.value)">
+          <span class="slider-tag" id="vol-val">${d.volume}%</span>
+        </div>
+      </div>
+      <div class="toggle-row">
+        <div class="slider-info"><h4>Mute Output</h4><p>Toggle speaker mute</p></div>
+        <label class="tw"><input type="checkbox" ${d.muted?'checked':''} onchange="toggleMute()"><span class="ts"></span></label>
+      </div>
+      ${d.sinks.length?`<div style="margin-top:.75rem">
+        <p style="font-size:.8rem;color:var(--sub0);margin-bottom:.5rem">Default output device:</p>
+        <select style="width:100%;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:var(--r-sm);padding:.55rem .75rem;color:var(--text);font-family:inherit;outline:none" onchange="setDefaultSink(this.value)">
+          ${d.sinks.map(s=>`<option value="${s.name}" ${s.isDefault?'selected':''}>${s.desc}</option>`).join('')}
+        </select>
+      </div>`:''}`;
+
+    document.getElementById('audio-in').innerHTML=`
+      <div class="card-title">🎙️ Input (Microphone)</div>
+      <div class="slider-row">
+        <div class="slider-info"><h4>Microphone Volume</h4><p>Recording input level (0–100%)</p></div>
+        <div class="slider-ctrl">
+          <input type="range" min="0" max="100" value="${d.micVolume}" id="mic-slider" oninput="setMicVol(this.value)">
+          <span class="slider-tag" id="mic-val">${d.micVolume}%</span>
+        </div>
+      </div>
+      <div class="toggle-row">
+        <div class="slider-info"><h4>Mute Microphone</h4><p>Toggle microphone mute</p></div>
+        <label class="tw"><input type="checkbox" ${d.micMuted?'checked':''} onchange="toggleMicMute()"><span class="ts"></span></label>
+      </div>
+      ${d.sources.length?`<div style="margin-top:.75rem">
+        <p style="font-size:.8rem;color:var(--sub0);margin-bottom:.5rem">Default input device:</p>
+        <select style="width:100%;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:var(--r-sm);padding:.55rem .75rem;color:var(--text);font-family:inherit;outline:none" onchange="setDefaultSource(this.value)">
+          ${d.sources.map(s=>`<option value="${s.name}" ${s.isDefault?'selected':''}>${s.desc}</option>`).join('')}
+        </select>
+      </div>`:''}`;
+
+    document.getElementById('audio-devices').innerHTML=`
+      <div class="card-title">🎛️ Audio Server</div>
+      ${sr('Audio Server',d.server||'PipeWire')}
+      ${sr('Output State',badge(d.sinks[0]?.state||'UNKNOWN',(d.sinks[0]?.state||'').includes('RUNNING')?'bg':'bb'))}`;
+  }catch(e){toast('Audio error: '+e.message,'error');}
+}
+
+let volDebounce=null, micDebounce=null;
+function setVol(v){
+  document.getElementById('vol-val').textContent=v+'%';
+  clearTimeout(volDebounce);
+  volDebounce=setTimeout(()=>{post('/api/audio/volume',{level:v}).catch(e=>toast(e.message,'error'));},150);
+}
+function setMicVol(v){
+  document.getElementById('mic-val').textContent=v+'%';
+  clearTimeout(micDebounce);
+  micDebounce=setTimeout(()=>{post('/api/audio/mic-volume',{level:v}).catch(e=>toast(e.message,'error'));},150);
+}
+async function toggleMute(){try{await post('/api/audio/mute',{});toast('Output mute toggled','info');}catch(e){toast(e.message,'error');}}
+async function toggleMicMute(){try{await post('/api/audio/mic-mute',{});toast('Mic mute toggled','info');}catch(e){toast(e.message,'error');}}
+async function setDefaultSink(sink){try{await post('/api/audio/default-sink',{sink});toast('Default output updated','success');}catch(e){toast(e.message,'error');}}
+async function setDefaultSource(source){try{await post('/api/audio/default-source',{source});toast('Default input updated','success');}catch(e){toast(e.message,'error');}}
+
+// ─── DISPLAY ───
+async function loadDisplay(){
+  try{
+    const d=await api('/api/display');
+    const bs=document.getElementById('brightness-slider');
+    const bv=document.getElementById('brightness-val');
+    bs.value=d.brightness.percent;
+    bv.textContent=d.brightness.percent+'%';
+
+    document.getElementById('display-monitors').innerHTML=d.monitors.map(m=>`
+      <div class="card">
+        <div class="card-title">🖥️ ${m.name||'Monitor'}</div>
+        ${sr('Resolution',`${m.width}×${m.height}`)}
+        ${sr('Refresh Rate',`${(m.refreshRate||60).toFixed(2)} Hz`,'blue')}
+        ${sr('Scale',m.scale+'×')}
+        ${sr('Position',`X:${m.x} Y:${m.y}`)}
+        ${sr('Active Workspace',m.activeWorkspace?.name||m.activeWorkspace?.id||'—','teal')}
+      </div>`).join('');
+
+    document.getElementById('display-gpu').innerHTML=`
+      <div class="card">
+        <div class="card-title">🎮 Graphics Hardware</div>
+        ${d.gpus.map((g,i)=>sr(`GPU ${i+1}`,g,'mauve')).join('')}
+        ${d.nvidiaSmi?`<div style="margin-top:.75rem">
+          <div class="card-title">🟢 NVIDIA RTX Status (Live)</div>
+          ${(()=>{const[name,temp,util,memU,memT]=d.nvidiaSmi.split(', ');
+            return sr('Name',name||'N/A','green')+sr('Temperature',(temp||'0')+'°C',parseInt(temp)>80?'red':'green')+sr('GPU Load',(util||'0')+'%')+sr('VRAM',`${memU||'0'} / ${memT||'0'} MiB`);})()}
+        </div>`:''}
+        <div class="btn-row">
+          <button class="btn btn-ghost btn-sm" onclick="act('reload-waybar')">🔄 Reload Waybar</button>
+          <button class="btn btn-ghost btn-sm" onclick="act('reload-hyprland')">↺ Reload Hyprland</button>
+        </div>
+      </div>`;
+  }catch(e){toast('Display error: '+e.message,'error');}
+}
+
+function onBrightnessSlide(v){
+  document.getElementById('brightness-val').textContent=v+'%';
+  clearTimeout(brightnessDebounce);
+  brightnessDebounce=setTimeout(()=>{
+    post('/api/display/brightness',{level:v}).then(()=>toast(`Brightness: ${v}%`,'info')).catch(e=>toast(e.message,'error'));
+  },200);
+}
+
+// ─── POWER ───
+async function loadPower(){
+  try{
+    const d=await api('/api/power');
+    const gov=d.cpu.governor;
+    document.getElementById('gov-grid').innerHTML=`
+      <div class="gov-card ${gov==='performance'?'active-gov perf':''}" onclick="setGov('performance')">
+        <div class="gov-icon">⚡</div>
+        <div class="gov-name">Performance</div>
+        <div class="gov-desc">Maximum CPU speed · Higher power usage</div>
+        ${gov==='performance'?badge('ACTIVE','br'):''}
+      </div>
+      <div class="gov-card ${gov==='powersave'?'active-gov save':''}" onclick="setGov('powersave')">
+        <div class="gov-icon">🍃</div>
+        <div class="gov-name">Power Save</div>
+        <div class="gov-desc">Optimized for battery life · Lower heat</div>
+        ${gov==='powersave'?badge('ACTIVE','bg'):''}
+      </div>`;
+    document.getElementById('gov-cur').innerHTML=`Current governor: <strong style="color:var(--blue);font-family:'JetBrains Mono',monospace">${gov}</strong> · CPU: ${d.cpu.curFreqMhz} MHz (max ${d.cpu.maxFreqMhz} MHz)`;
+
+    const bat=d.battery;
+    if(bat){
+      const pct=bat.capacity;
+      const health=bat.energyFull&&bat.energyDesign?Math.round(bat.energyFull/bat.energyDesign*100):null;
+      document.getElementById('battery-card').innerHTML=`
+        <div class="card-title">🔋 Battery — ${pct}% ${d.acAdapter.online?'⚡ Charging':'Discharging'}</div>
+        <div class="prog-wrap"><div class="prog-label"><span>Charge Level</span><span>${pct}%</span></div>
+        <div class="prog"><div class="prog-fill" style="width:${pct}%;background:${barColor(100-pct)}"></div></div></div>
+        ${health?`<div class="prog-wrap" style="margin-top:.6rem"><div class="prog-label"><span>Battery Health</span><span>${health}%</span></div>
+        <div class="prog"><div class="prog-fill" style="width:${health}%;background:linear-gradient(90deg,var(--green),var(--teal))"></div></div></div>`:''}
+        ${sr('Status',badge(bat.status,bat.status==='Charging'?'bg':bat.status==='Full'?'bb':'by'))}
+        ${sr('Technology',bat.technology)}
+        ${sr('Manufacturer',bat.manufacturer+' '+bat.modelName)}
+        ${sr('Cycle Count',bat.cycleCount)}
+        ${bat.energyFull?sr('Current Capacity',`${(bat.energyFull/1000000).toFixed(1)} Wh`):''}
+        ${bat.energyDesign?sr('Design Capacity',`${(bat.energyDesign/1000000).toFixed(1)} Wh`):''}
+        ${sr('AC Adapter',d.acAdapter.online?badge('PLUGGED IN','bg'):badge('ON BATTERY','by'))}`;
+    }else{
+      document.getElementById('battery-card').innerHTML='<div class="card-title">🔋 Battery</div><p style="color:var(--sub0)">No battery detected</p>';
+    }
+
+    const to=d.idleTimeouts;
+    document.getElementById('timeout-rows').innerHTML=`
+      ${timeoutRow('Screen Dim','dim',to.dim,'Brightness drops to 20%')}
+      ${timeoutRow('Screen Lock','lock',to.lock,'Hyprlock activates')}
+      ${timeoutRow('Display Off (DPMS)','dpms',to.dpms,'Monitor goes blank')}
+      ${timeoutRow('System Suspend','suspend',to.suspend,'Machine enters sleep')}`;
+  }catch(e){toast('Power error: '+e.message,'error');}
+}
+
+function timeoutRow(label,id,val,desc){
+  const m=Math.round(val/60);
+  return `<div class="stat-row">
+    <div><div class="stat-label">${label}</div><div style="font-size:.73rem;color:var(--s2)">${desc}</div></div>
+    <div style="display:flex;align-items:center;gap:.5rem">
+      <input class="num-input" type="number" id="to-${id}" value="${val}" min="30" step="10"> <span style="font-size:.78rem;color:var(--sub0)">s (${m}m)</span>
+    </div>
+  </div>`;
+}
+
+async function setGov(mode){
+  try{
+    toast(`Switching to ${mode} mode…`,'info');
+    await post('/api/power/governor',{mode});
+    toast(`CPU governor set to ${mode}`,'success');
+    setTimeout(loadPower,800);
+  }catch(e){toast('Governor error: '+e.message,'error');}
+}
+
+async function saveTimeouts(){
+  const ids=['dim','lock','dpms','suspend'];
+  const vals={};
+  for(const id of ids){
+    const el=document.getElementById('to-'+id);
+    if(el)vals[id]=parseInt(el.value,10);
+  }
+  try{
+    await post('/api/power/timeouts',vals);
+    toast('Timeouts saved and hypridle restarted','success');
+  }catch(e){toast('Error: '+e.message,'error');}
+}
+
+// ─── STORAGE ───
+async function loadStorage(){
+  const el=document.getElementById('storage-content');
+  try{
+    const d=await api('/api/storage');
+    el.innerHTML=`
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:1rem;margin-bottom:1.1rem">
+        ${d.partitions.filter(p=>p.size>100).map(p=>`
+        <div class="card" style="margin-bottom:0">
+          <div style="font-size:1.6rem;margin-bottom:.4rem">${p.mountpoint==='/'?'🗂️':p.mountpoint.includes('boot')?'⚡':'💽'}</div>
+          <div style="font-weight:700;font-family:'JetBrains Mono',monospace;font-size:.9rem">${p.mountpoint}</div>
+          <div style="font-size:.74rem;color:var(--sub0);margin-bottom:.65rem">${p.source} · ${p.fstype}</div>
+          <div class="prog-wrap">
+            <div class="prog-label"><span>${(p.used/1024).toFixed(1)} GB</span><span>${(p.size/1024).toFixed(1)} GB</span></div>
+            <div class="prog"><div class="prog-fill" style="width:${p.percent}%;background:${barColor(p.percent)}"></div></div>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-top:.6rem">
+            <span style="font-size:.76rem;color:var(--sub0)">${p.percent}% used · ${(p.avail/1024).toFixed(1)} GB free</span>
+            <button class="btn btn-ghost btn-sm" onclick="openInThunar('${p.mountpoint}')">📁 Open</button>
+          </div>
+        </div>`).join('')}
+      </div>
+      ${d.blockDevices.length?`<div class="card">
+        <div class="card-title">💿 Physical Drives</div>
+        ${d.blockDevices.map(dev=>sr(dev.NAME,`${dev.SIZE} · ${dev.ROTA==='1'?'HDD':'NVMe/SSD'} · ${dev.MODEL||'Unknown Drive'}`, 'blue')).join('')}
+      </div>`:''}`;
+  }catch(e){el.innerHTML=`<div class="card"><p style="color:var(--red)">${e.message}</p></div>`;}
+}
+async function openInThunar(path){
+  try{await post('/api/storage/open',{path});toast(`Opening ${path} in Thunar`,'info');}
+  catch(e){toast(e.message,'error');}
+}
+
+// ─── USERS ───
+async function loadUsers(){
+  const el=document.getElementById('users-content');
+  try{
+    const d=await api('/api/users');
+    const u=d.current;
+    el.innerHTML=`
+      <div class="card">
+        <div style="display:flex;align-items:center;gap:1.4rem;margin-bottom:1.1rem">
+          <div style="width:68px;height:68px;border-radius:50%;background:linear-gradient(135deg,var(--lav),var(--mauve));display:flex;align-items:center;justify-content:center;font-size:2rem;font-weight:800;color:var(--crust);box-shadow:0 0 18px rgba(180,190,254,.3)">
+            ${u.username[0].toUpperCase()}</div>
+          <div>
+            <div style="font-size:1.4rem;font-weight:800">${u.username}</div>
+            <div style="color:var(--blue);font-family:'JetBrains Mono',monospace;font-size:.85rem">@${u.hostname}</div>
+          </div>
+        </div>
+        ${sr('User ID',u.uid)} ${sr('Group ID',u.gid)}
+        ${sr('Home Directory',u.home,'blue')} ${sr('Login Shell',u.shell,'teal')}
+        <div class="stat-row"><span class="stat-label">Groups</span><span class="stat-val" style="font-size:.76rem;color:var(--sub1)">${u.groups.join(', ')}</span></div>
+      </div>
+      ${d.systemUsers.length>1?`<div class="card">
+        <div class="card-title">👥 All Accounts (UID ≥ 1000)</div>
+        <div class="tbl-wrap"><table><thead><tr><th>Username</th><th>UID</th><th>Shell</th><th>Comment</th></tr></thead>
+        <tbody>${d.systemUsers.map(u=>`<tr>
+          <td>${u.username}</td><td>${u.uid}</td>
+          <td style="font-family:'JetBrains Mono',monospace;color:var(--teal);font-size:.78rem">${u.shell}</td>
+          <td style="color:var(--sub0)">${u.comment||'—'}</td>
+        </tr>`).join('')}</tbody></table></div></div>`:''}
+      ${d.loginHistory.length?`<div class="card">
+        <div class="card-title">🕐 Recent Login History</div>
+        ${d.loginHistory.slice(0,8).map(l=>`<div class="stat-row"><span class="stat-label" style="font-family:'JetBrains Mono',monospace;font-size:.78rem;word-break:break-all">${l}</span></div>`).join('')}
+      </div>`:''}`;
+  }catch(e){el.innerHTML=`<div class="card"><p style="color:var(--red)">${e.message}</p></div>`;}
+}
+
+// ─── DATE & TIME ───
+let tzList=[];
+function startClock(){
+  setInterval(()=>{
+    const now=new Date();
+    const el=document.getElementById('live-clock');
+    if(el)el.textContent=now.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:true});
+  },1000);
+}
+async function loadDatetime(){
+  try{
+    const d=await api('/api/datetime');
+    document.getElementById('cur-tz').textContent=d.timezone;
+    document.getElementById('ntp-toggle').checked=d.ntpActive;
+    document.getElementById('ntp-status').innerHTML=`Clock synchronized: ${badge(d.synced?'YES':'NO',d.synced?'bg':'br')} · NTP: ${badge(d.ntpActive?'ACTIVE':'INACTIVE',d.ntpActive?'bg':'br')}`;
+    document.getElementById('dt-info').innerHTML=`
+      ${sr('Timezone',d.timezone,'blue')}
+      ${sr('Locale',d.locale)}
+      ${sr('NTP Service',badge(d.ntpActive?'Active':'Inactive',d.ntpActive?'bg':'br'))}
+      ${sr('Clock Synced',badge(d.synced?'Yes':'No',d.synced?'bg':'br'))}`;
+
+    if(!tzList.length){
+      const tzs=await api('/api/datetime/timezones');
+      tzList=tzs;
+      const sel=document.getElementById('tz-select');
+      sel.innerHTML=tzs.map(tz=>`<option value="${tz}" ${tz===d.timezone?'selected':''}>${tz}</option>`).join('');
+    }else{
+      const sel=document.getElementById('tz-select');
+      [...sel.options].forEach(o=>{o.selected=o.value===d.timezone;});
+    }
+  }catch(e){toast('DateTime error: '+e.message,'error');}
+}
+async function setTimezone(){
+  const tz=document.getElementById('tz-select').value;
+  try{await post('/api/datetime/timezone',{tz});toast(`Timezone set to ${tz}`,'success');loadDatetime();}
+  catch(e){toast('Error: '+e.message,'error');}
+}
+async function setNtp(en){
+  try{await post('/api/datetime/ntp',{enable:en});toast(en?'NTP enabled':'NTP disabled','success');setTimeout(loadDatetime,1000);}
+  catch(e){toast('Error: '+e.message,'error');}
+}
+
+// ─── COMPOSITOR ───
+async function loadCompositor(){
+  const el=document.getElementById('comp-content');
+  try{
+    const s=await api('/api/compositor');
+    compState={...s};
+    const sl=(key,label,desc,min,max,step,fmt)=>`
+      <div class="slider-row">
+        <div class="slider-info"><h4>${label}</h4><p>${desc}</p></div>
+        <div class="slider-ctrl">
+          <input type="range" min="${min}" max="${max}" step="${step}" value="${s[key]}"
+            id="cs-${key}" oninput="compState['${key}']=parseFloat(this.value);document.getElementById('cv-${key}').textContent=${JSON.stringify(fmt).replace('__V__','this.value')}">
+          <span class="slider-tag" id="cv-${key}">${fmt.replace('__V__',s[key])}</span>
+        </div>
+      </div>`;
+    const tog=(key,label,desc)=>`
+      <div class="toggle-row">
+        <div class="slider-info"><h4>${label}</h4><p>${desc}</p></div>
+        <label class="tw"><input type="checkbox" id="cs-${key}" ${s[key]?'checked':''} onchange="compState['${key}']=this.checked"><span class="ts"></span></label>
+      </div>`;
+    el.innerHTML=`
+      <div class="card">
+        <div class="card-title">📐 Layout & Gaps</div>
+        ${sl('gaps_in','Inner Gaps','Space between tiled windows',0,30,1,'__V__px')}
+        ${sl('gaps_out','Outer Gaps','Gaps between windows and screen edge',0,50,1,'__V__px')}
+        ${sl('border_size','Border Thickness','Window border outline width',0,10,1,'__V__px')}
+      </div>
+      <div class="card">
+        <div class="card-title">✨ Window Decorations</div>
+        ${sl('rounding','Corner Rounding','Window corner radius',0,30,1,'__V__px')}
+        ${sl('active_opacity','Active Window Opacity','Transparency of focused window',0.5,1.0,0.01,'Math.round(__V__*100)+"%"')}
+        ${sl('inactive_opacity','Inactive Window Opacity','Transparency of unfocused windows',0.5,1.0,0.01,'Math.round(__V__*100)+"%"')}
+        ${sl('dim_strength','Dim Strength','How much to dim unfocused windows',0,0.8,0.01,'Math.round(__V__*100)+"%"')}
+        ${tog('dim_inactive','Dim Inactive Windows','Apply dim effect to non-focused windows')}
+        ${tog('animations_enabled','Window Animations','Enable window open/close/move animations')}
+      </div>
+      <div class="card">
+        <div class="card-title">💫 Blur & Shadows</div>
+        ${tog('blur_enabled','Window Blur','Enable background blur effect')}
+        ${sl('blur_size','Blur Radius','Size of blur kernel',1,16,1,'__V__')}
+        ${sl('blur_passes','Blur Passes','Number of blur iterations',1,5,1,'__V__')}
+        ${tog('shadow_enabled','Drop Shadows','Enable window drop shadow')}
+        ${sl('shadow_range','Shadow Range','Shadow spread distance',0,40,1,'__V__px')}
+      </div>
+      <div class="card">
+        <div class="card-title">🖱️ Input</div>
+        ${sl('sensitivity','Mouse Sensitivity','Cursor speed offset (-1.0 to +1.0)',-1.0,1.0,0.05,'(parseFloat(__V__)>0?"+":"")+parseFloat(__V__).toFixed(2)')}
+        ${tog('natural_scroll','Natural Touchpad Scroll','Scroll follows finger drag direction')}
+      </div>
+      <div class="card">
+        <div class="card-title">💾 Apply Changes</div>
+        <p style="color:var(--sub0);font-size:.83rem;margin-bottom:.9rem">Saves to hyprland.conf and reloads the compositor live.</p>
+        <div class="btn-row">
+          <button class="btn btn-pri" onclick="saveComp()">💾 Apply & Reload</button>
+          <button class="btn btn-ghost" onclick="loadCompositor()">↺ Discard Changes</button>
+        </div>
+      </div>`;
+    // Fix slider display for opacity/sensitivity
+    document.querySelectorAll('[id^="cs-"]').forEach(el=>{
+      const key=el.id.replace('cs-','');
+      if(el.type==='range')el.oninput({target:el});
+    });
+  }catch(e){el.innerHTML=`<div class="card"><p style="color:var(--red)">${e.message}</p></div>`;}
+}
+async function saveComp(){
+  try{
+    await post('/api/compositor',compState);
+    toast('Compositor settings applied and reloaded!','success');
+  }catch(e){toast('Save error: '+e.message,'error');}
+}
+
+// ─── STARTUP ───
+async function loadStartup(){
+  const el=document.getElementById('startup-content');
+  try{
+    const d=await api('/api/startup');
+    el.innerHTML=`<div class="card">
+      <div class="card-title">🚀 exec-once Entries (${d.length} total)</div>
+      <p style="color:var(--sub0);font-size:.8rem;margin-bottom:.85rem">These services launch automatically when Hyprland starts.</p>
+      ${d.map(e=>`<div class="startup-item">
+        <div style="font-size:1.1rem">${e.enabled?'🟢':'🔴'}</div>
+        <div class="startup-cmd">${e.command}</div>
+        ${e.enabled?'<span class="badge bg">ON</span>':'<span class="badge br">OFF</span>'}
+      </div>`).join('')}
+    </div>`;
+  }catch(e){el.innerHTML=`<div class="card"><p style="color:var(--red)">${e.message}</p></div>`;}
+}
+
+// ─── KEYBINDS ───
+async function loadKeybinds(){
+  try{
+    allBinds=await api('/api/keybinds');
+    const cats=['All',...new Set(allBinds.map(b=>b.category))];
+    document.getElementById('kbd-cats').innerHTML=cats.map(c=>`<button class="filter-btn ${c==='All'?'active':''}" onclick="setKbdCat('${c}',this)">${c}</button>`).join('');
+    renderKbd(allBinds);
+  }catch(e){toast('Keybinds error','error');}
+}
+function setKbdCat(cat,btn){
+  activeCat=cat;
+  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  filterKbd(document.getElementById('kbd-search').value);
+}
+function filterKbd(q){
+  let b=allBinds;
+  if(activeCat!=='All')b=b.filter(x=>x.category===activeCat);
+  if(q){const lq=q.toLowerCase();b=b.filter(x=>(x.mods+x.key+x.action+x.args+x.category).toLowerCase().includes(lq));}
+  renderKbd(b);
+}
+function renderKbd(binds){
+  document.getElementById('kbd-body').innerHTML=binds.map(b=>{
+    const mods=b.mods.split(/\s+/).filter(Boolean).map(m=>`<span class="key-chip ${['SUPER','SHIFT','CTRL','ALT'].includes(m)?'mod':''}">${m}</span>`).join('');
+    return `<tr><td>${mods||'—'}</td><td><span class="key-chip">${b.key}</span></td>
+      <td style="color:var(--teal);font-family:'JetBrains Mono',monospace;font-size:.8rem">${b.action}</td>
+      <td style="color:var(--sub0);font-family:'JetBrains Mono',monospace;font-size:.77rem">${b.args||'—'}</td>
+      <td><span class="badge bm">${b.category}</span></td></tr>`;
+  }).join('')||`<tr><td colspan="5" style="text-align:center;padding:2rem;color:var(--s2)">No matching keybinds</td></tr>`;
+}
+
+// ─── PROCESSES ───
+async function loadProcesses(){
+  try{
+    const d=await api('/api/processes');
+    allProcs=[...d.byCpu,...d.byMem];
+    document.getElementById('proc-total').textContent=`Total: ${d.total} processes`;
+    const tbl=(procs,title,col)=>`<div class="card" style="margin-bottom:0">
+      <div class="card-title">${title}</div>
+      <div class="tbl-wrap"><table><thead><tr><th>PID</th><th>User</th><th>${col}</th><th>RSS</th><th>Command</th><th></th></tr></thead>
+      <tbody>${procs.map(p=>`<tr>
+        <td><span style="font-family:'JetBrains Mono',monospace;font-size:.78rem;background:var(--s0);padding:.12rem .4rem;border-radius:4px">${p.pid}</span></td>
+        <td style="color:var(--sub0)">${p.user}</td>
+        <td><span class="badge ${col==='CPU%'?p.cpu:p.mem>30?'br':(col==='CPU%'?p.cpu:p.mem)>10?'by':'bb'}">${(col==='CPU%'?p.cpu:p.mem).toFixed(1)}%</span></td>
+        <td style="font-family:'JetBrains Mono',monospace;font-size:.78rem;color:var(--sub0)">${p.rss}</td>
+        <td style="font-family:'JetBrains Mono',monospace;font-size:.76rem;color:var(--sub0);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${p.command}</td>
+        <td><button class="btn btn-danger btn-sm" onclick="askKill('${p.pid}','${p.command.replace(/'/g,'')}')">Kill</button></td>
+      </tr>`).join('')}</tbody></table></div></div>`;
+    document.getElementById('proc-content').innerHTML=tbl(d.byCpu,'📊 Top by CPU','CPU%')+tbl(d.byMem,'🧠 Top by RAM','MEM%');
+  }catch(e){document.getElementById('proc-content').innerHTML=`<div class="loading" style="color:var(--red)">${e.message}</div>`;}
+}
+function filterProcs(q){
+  if(!q){loadProcesses();return;}
+  // Filter happens client side on visible rows
+  document.querySelectorAll('#proc-content tbody tr').forEach(tr=>{
+    tr.style.display=tr.textContent.toLowerCase().includes(q.toLowerCase())?'':'none';
+  });
+}
+function askKill(pid,cmd){
+  pendingKillPid=pid;
+  document.getElementById('kill-pid-label').textContent='PID '+pid;
+  document.getElementById('kill-cmd-label').textContent=cmd;
+  document.getElementById('kill-dialog').classList.add('open');
+}
+async function confirmKill(){
+  document.getElementById('kill-dialog').classList.remove('open');
+  try{await post('/api/processes/kill',{pid:pendingKillPid});toast(`Process ${pendingKillPid} terminated`,'success');setTimeout(loadProcesses,800);}
+  catch(e){toast('Kill failed: '+e.message,'error');}
+}
+
+// ─── ABOUT ───
+async function loadAbout(){
+  const el=document.getElementById('about-content');
+  try{
+    const [sys,disp]=await Promise.all([api('/api/system'),api('/api/display')]);
+    document.getElementById('about-os').textContent=sys.os;
+    document.getElementById('about-sub').textContent=`${sys.cpu.model} · Kernel ${sys.kernel} · ${sys.arch}`;
+    el.innerHTML=`<div class="two-col">
+      <div class="card">
+        <div class="card-title">🖥️ Hardware</div>
+        ${sr('CPU',sys.cpu.model,'blue')}${sr('CPU Threads',sys.cpu.cores)}
+        ${sr('RAM',gb(sys.ram.total))}
+        ${disp.gpus.map((g,i)=>sr(`GPU ${i+1}`,g,'mauve')).join('')}
+        ${sr('Motherboard',sys.firmware.boardVendor+' '+sys.firmware.boardName)}
+      </div>
+      <div class="card">
+        <div class="card-title">🐧 Software</div>
+        ${sr('OS',sys.os)}${sr('Kernel',sys.kernel,'blue')}${sr('Architecture',sys.arch)}
+        ${sr('Hostname',sys.hostname,'mauve')}
+        ${sr('Window Manager','Hyprland v0.55+')}
+        ${sr('Status Bar','Waybar')}
+        ${sr('Theme','Catppuccin Mocha')}
+      </div>
+      <div class="card">
+        <div class="card-title">🔧 Firmware</div>
+        ${sr('BIOS Vendor',sys.firmware.biosVendor)}
+        ${sr('BIOS Version',sys.firmware.biosVersion)}
+        ${sr('Board',sys.firmware.boardVendor+' '+sys.firmware.boardName)}
+      </div>
+      <div class="card">
+        <div class="card-title">📂 Config Locations</div>
+        ${sr('Hyprland','/home/harsh/hyprland-dotfiles/hypr/','blue')}
+        ${sr('Waybar','/home/harsh/hyprland-dotfiles/waybar/','blue')}
+        ${sr('Rofi','/home/harsh/hyprland-dotfiles/rofi/','blue')}
+        ${sr('Settings Panel','Port 50000')}
+      </div>
+    </div>`;
+  }catch(e){el.innerHTML=`<div class="card"><p style="color:var(--red)">${e.message}</p></div>`;}
+}
+
+// ─── QUICK ACTION ───
+async function act(type){
+  try{await post('/api/action',{type});const m={lock:'Locking…',logout:'Logging out…',reboot:'Rebooting…',suspend:'Suspending…',shutdown:'Shutting down…'};toast(m[type]||type,'info');}
+  catch(e){toast(e.message,'error');}
+}
+
+// ─── LOADER MAP ───
+const loaders={
+  overview:loadOverview,network:loadNetwork,bluetooth:loadBluetooth,
+  audio:loadAudio,display:loadDisplay,power:loadPower,storage:loadStorage,
+  users:loadUsers,datetime:loadDatetime,compositor:loadCompositor,
+  startup:loadStartup,keybinds:loadKeybinds,processes:loadProcesses,about:loadAbout
+};
+
+// ─── INIT ───
+loadOverview();
+startClock();
+setInterval(()=>{if(document.getElementById('panel-processes').classList.contains('active'))loadProcesses();},5000);
+setInterval(()=>{if(document.getElementById('panel-overview').classList.contains('active'))loadOverview();},7000);
+
+// Close modal on overlay click
+document.getElementById('wifi-modal').addEventListener('click',e=>{if(e.target===e.currentTarget)closeWifiModal();});
+// Enter key in password field
+document.getElementById('wifi-pwd').addEventListener('keydown',e=>{if(e.key==='Enter')connectWifi();});
+</script>
+</body>
+</html>
