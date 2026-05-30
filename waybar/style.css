@@ -23,7 +23,8 @@
 
 /* ── Main Bar Container (Floating Glassmorphism) ────────────────────────── */
 window#waybar {
-    background-color: rgba(24, 24, 37, 0.65); /* Frosted Catppuccin Mantle */
+    background-color: rgba(24, 24, 37, 0.65);
+    /* Frosted Catppuccin Mantle */
     border-radius: 14px;
     color: #cdd6f4;
     border: 1px solid rgba(255, 255, 255, 0.08);
@@ -324,11 +325,11 @@ tooltip label {
     padding: 3px 10px;
 }
 
-#tray > .passive {
+#tray>.passive {
     -gtk-icon-effect: dim;
 }
 
-#tray > .needs-attention {
+#tray>.needs-attention {
     background: rgba(243, 139, 168, 0.2);
     border-radius: 5px;
     -gtk-icon-effect: highlight;
